@@ -23,7 +23,7 @@ def my_game():
     while counter < 3:
         #collecting your choice  
         print(f'make your choice')
-        your_answer = input('your choice --->')
+        your_answer = input('your choice --->').strip().lower()
 
         #check for invalid input
         #list comprehension: for each x in choices, set x to true if x == your_answer else set x to false
