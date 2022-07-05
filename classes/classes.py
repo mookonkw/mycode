@@ -3,6 +3,7 @@
 #Zork protagonist
 
 class Adventurer():
+    #class attribute
     # what is in their pockets?
     #what is their health?
     #how hard can they swing a sword?
@@ -17,7 +18,7 @@ class Adventurer():
         # drink a healing potion
         self.health +=5
     
-    def punch(self, other_adventurer: Adventurer):
+    def punch(self, other_adventurer: Adventurer()):
         other_adventurer.health -= self.strength
         #apply ones strength against anothers health
 
@@ -37,5 +38,6 @@ print(Asberus.health)
 
 # print(nahIla.health)
 # print(Asberus.health)
+
 
 
