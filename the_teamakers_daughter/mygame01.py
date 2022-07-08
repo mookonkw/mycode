@@ -4,9 +4,15 @@
 
 # imports
 import pyfiglet
-from rooms import rooms
+import threading
+import os
+from rooms import roominfo
 
-title = pyfiglet.figlet_format("The Adubi War" ,font = "slant")
+title = pyfiglet.figlet_format("Ishindu's fate" ,font = "slant")
+
+def decision():
+    print("You took too long! you have suffocated!!")
+    os._exit(os.EX_OK) 
 
 
 def showInstructions():
@@ -16,9 +22,10 @@ def showInstructions():
     print(title)    
 
     print('''
+    ======================================================================
     This is the story of the gods
     Location: SouthEast Nigeria, pre-colonial Alaigbo(igboland).
-    ========
+    ======================================================================
     Commands:
     go [direction]
     get [item]
@@ -29,7 +36,7 @@ def showInstructions():
 def showStatus():
     """determine the current status of the player"""
     #print description
-    print(rooms[currentRoom]['desc'])
+    print(roominfo[currentRoom]['desc'])
     #print the current inventory
     print('Inventory : ' + str(inventory))
 
@@ -44,56 +51,42 @@ showInstructions()
 while True:
     showStatus()
 
-    #get the player's next 'move'
-    #.split() breaks it up into an list array
-    #eg typing 'go east' would give the list:
-    #['go','east']
     move = ''
     while move == '':  
         move = input('>')
-
-    # split allows an items to have a space on them
-    # get golden key is returned ["get", "golden key"]          
+         
     move = move.lower().split(" ", 1)
-    
+    os.system('clear')  # clear the screen
 
-    #if they type 'go' first
-    if move[0] == 'go':
-        #check that they are allowed wherever they want to go
-        if move[1] in rooms[currentRoom]:
-            #set the current room to the new room
-            currentRoom = rooms[currentRoom][move[1]]
-        #there is no door (link) to the new room
-        else:
-            print('You can\'t go that way!')
-    continue
-
-
-    #if they type 'get' first
+    #get moves: player is in the hall and gets key
+    #if move == 'get' 'key'  
     if move[0] == 'get' and move[1] == 'key':
-        #if the room contains an item, and the item is the one they want to get
-        if "item" in rooms[currentRoom] and move[1] in rooms[currentRoom]['item']:
-            #add the item to their inventory
+        #if the room contains key, and the key is the one they want to get
+        if "item" in roominfo[currentRoom] and move[1] in roominfo[currentRoom]['item']:
+            #add key to their inventory
             inventory += [move[1]]
             #display a helpful message
             print('you have collected a ' + move[1])
 
-            #delete the item from the room
-            del rooms[currentRoom]['item']
+            #delete key from the room
+            del roominfo[currentRoom]['item']
+            print(f"inventory : {inventory}")
             continue
+        else:
+            print('You cant get ' + move[1] + '!')
+            #otherwise, if key isn't there to get
 
-        #otherwise, if the item isn't there to get
-
+    #if player is in the South_wing and gets map or lantern
     if move[0] == 'get' and move[1] == 'map':
          #if the room contains an item, and the item is the one they want to get
-        if "item" in rooms[currentRoom] and move[1] in rooms[currentRoom]['item']:
+        if "item" in roominfo[currentRoom] and move[1] in roominfo[currentRoom]['item']:
             #add the item to their inventory
             inventory += [move[1]]
             #display a helpful message
-            print('you have just acquired a' + move[1] + '. You glance through and theres directions around the shrine.\n'
-            '==================='
-            '|   MAP oF MBARI  |'
-            '==================='
+            print('you have just acquired a ' + move[1] + '. You glance through and theres directions around the shrine.\n'
+            '===================\n'
+            '|   MAP oF MBARI  |\n'
+            '===================\n'
             'You are in the south wing \n'
             'To the north of the south wing is the Hall \n'
             'To the east of the hall is the east wing \n'
@@ -104,34 +97,81 @@ while True:
             'BEWARE of TRAPS!!!'
             )
             #delete the item from the room
-            del rooms[currentRoom]['item']
-            continue
-      
+            del roominfo[currentRoom]['item'][0]
+
+    elif move[0] == 'get' and move[1] == 'lantern':
+        if "item" in roominfo[currentRoom] and move[1] in roominfo[currentRoom]['item']:
+            #add the item to their inventory
+            inventory += [move[1]]
+            #display a helpful message
+            print('you have collected a ' + move[1])
+
+            #delete the item from the room
+            del roominfo[currentRoom]['item'][1]
+
+            print(f"inventory : {inventory}")
         else:
-            #tell them they can't get it
-            print('Can\'t get ' + move[1] + '!')
+            print('You cant get ' + move[1] + '!')
+            #otherwise, if the item isn't there to get
             continue
 
-    ## If a player enters a room with a monster
-    if 'item' in rooms[currentRoom] and 'monster' in rooms[currentRoom]['item']:
-        print('A monster has got you... GAME OVER!')
-        break
 
+    ## player go moves
+    if move[0] == 'go' :
+        if move[1] in roominfo[currentRoom]:
+            currentRoom = roominfo[currentRoom][move[1]]
+            print(currentRoom)
+            if currentRoom == "South_wing" :
+                print('the Hall is north of the South_wing')
+
+            elif currentRoom == "Secret_doorway" :  
+                if 'key' in inventory:
+                    print(
+                    "================================================================================================================================================================= \n"
+                    "You have suddenly found yourself in a crypt and the door quickly snaps shut behind you.It is pitch dark and drafty. \n"
+                    "================================================================================================================================================================= " )
+                    if 'lantern' in inventory:
+                        S = threading.Timer(15.0, decision)
+                        print(
+                        "================================================================================================================================================================= \n"
+                        "luckily you snagged a lantern from the south wing. you turn your latern on and as the light brightens the room, you notice 3 distinctly marked statues. \n "
+                        '3 figures are arranged carefully against the crypt\'s interior wall. They are marked boldly with the numbers 6 7 2 respectively. You now have 15 seconds to \n'
+                        'figure out the combinations and escape before you suffocate \n'
+                        "================================================================================================================================================================= \n")
+                        S.start()
+                        move = input('>')
+                        if move == '276':
+                            S.cancel()
+                            inventory += ['golden_orb']
+                            del roominfo[currentRoom]['item']
+                            print("THE GODS ARE WITH YOU! They have bestowed on you the golden_orb with which to banish Ekwensu. You live to fight another day warrior")
+
+                        else:
+                            decision()
+                        # os._exit will FORCE the program to end!    
+                    else:
+                        print( "================================================================================================================================================================= \n"
+                            'You have entered the crypt with no lantern to see around. You could not find the statues that would give you th ecode to the booby trap. You are crushed. GAME OVER!!! \n'
+                            "=================================================================================================================================================================")
+                        os._exit(os.EX_OK)             
+                else:
+                    print('You cannot go that way. You need a key')
+                continue
+            elif currentRoom == "East_wing" :
+                if 'Ekwensu' in roominfo[currentRoom]['item'] and "golden_orb" in inventory:
+                    print('You entered the room Ekwensu dwells in. You have the golden orb in your possession. Ala has granted you the power to seal Ekwensu away in her womb forever... \n'
+                    'Thank you for your service Warrior, YOU WIN!')
+                    os._exit(os.EX_OK)
+                elif 'Ekwensu' in roominfo[currentRoom]['item'] and "golden_orb" not in inventory:  
+                    print('You entered the room Ekwensu dwells in. You do not have the golden orb with you. You cannot defeat the tricky Ekwensu without the power of Ala. You have failed this \n'
+                    'time Warrior. GAME OVER!!')
+                    os._exit(os.EX_OK)
+            else:
+                print("You cannot go " + move[1] + '!')
+    
+        
     ## Define how a player can win
-    if currentRoom == 'Garden' and 'key' in inventory and 'potion' in inventory:
+    if currentRoom == 'Grove_mouth' and 'key' in inventory:
         print('You have succeeded in vanquising the evil mascqurade Ekwensu and discovered the ULTRA RARE telepotion... YOU WIN!')
         break
-
-    ## Define how player gets inside the crypt
-    if currentRoom == 'secret_doorway' and 'key' in inventory:
-        print('You have suddenly found yourself in a crypt and the dor quickly snaps shut behind you.It is pitch dark and drafty.')
-        if 'lantern' in inventory:
-            print('luckily you snagged a lantern from the south wing. you turn your latern on and as the light brightens the room, you notice 3 distinctly marked statues. \n '
-            'six figures are arranged carefully against the crypt\'s interior wall. They are marked boldly with the numbers 6 7 2 respectively. You now have 15 seconds to \n'
-            'figure out the combinations and escape before you suffocate')
-
-        else:
-            print('you have no lantern to see around. You have suffocated.')
-    #break        
-        
-
+    
