@@ -70,6 +70,7 @@ while True:
 
             #delete key from the room
             del roominfo[currentRoom]['item']
+            
             print(f"inventory : {inventory}")
             continue
         else:
